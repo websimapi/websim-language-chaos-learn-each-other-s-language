@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Chaos - Learn Each Other's Language</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="game-header">
+            <h1>🌍 Language Chaos</h1>
+            <p>Speak in one language, hear it back in many!</p>
+        </header>
+
+        <div class="disclaimer-modal" id="disclaimerModal">
+            <div class="modal-content">
+                <h2>⚠️ Voice Cloning Disclaimer</h2>
+                <div class="disclaimer-text">
+                    <p><strong>Important Notice:</strong></p>
+                    <ul>
+                        <li>This game uses voice cloning technology for entertainment purposes only</li>
+                        <li>Your voice recordings are used temporarily to generate personalized speech</li>
+                        <li>Voice data is not permanently stored on our servers</li>
+                        <li>You can disable voice cloning and use default voices instead</li>
+                        <li>Only participate if you consent to voice cloning technology</li>
+                        <li>You can clear your generated audio cache at any time</li>
+                    </ul>
+                    <p><em>By continuing, you agree to these terms and confirm you are comfortable with voice cloning technology.</em></p>
+                </div>
+                <div class="modal-buttons">
+                    <button id="acceptDisclaimer" class="accept-btn">I Understand & Accept</button>
+                    <button id="declineDisclaimer" class="decline-btn">Decline</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-content" id="gameContent" style="display: none;">
+            <div class="settings-panel">
+                <div class="voice-settings">
+                    <label>
+                        <input type="checkbox" id="useVoiceCloning" checked>
+                        Use Voice Cloning
+                    </label>
+                    <select id="defaultVoice" disabled>
+                        <option value="en-male">English Male</option>
+                        <option value="en-female">English Female</option>
+                        <option value="es-male">Spanish Male</option>
+                        <option value="es-female">Spanish Female</option>
+                        <option value="fr-male">French Male</option>
+                        <option value="fr-female">French Female</option>
+                    </select>
+                </div>
+                <button id="clearCache" class="clear-cache-btn">🗑️ Clear My Audio Cache</button>
+            </div>
+
+            <div class="players-list">
+                <h3>Players Online (<span id="playerCount">0</span>)</h3>
+                <div id="playersList"></div>
+            </div>
+
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages"></div>
+                
+                <div class="recording-controls">
+                    <button id="recordBtn" class="record-btn">
+                        <span class="record-icon">🎤</span>
+                        <span class="record-text">Hold to Record</span>
+                    </button>
+                    <div class="recording-status" id="recordingStatus"></div>
+                </div>
+            </div>
+
+            <div class="language-info">
+                <p>🎯 <strong>How it works:</strong> Speak into the microphone, and your words will be magically transformed into multiple languages before being spoken back in your voice!</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
+
