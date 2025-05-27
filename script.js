@@ -71,6 +71,8 @@ class LanguageChaosGame {
         const useVoiceCloningCheckbox = document.getElementById('useVoiceCloning');
         const defaultVoiceSelect = document.getElementById('defaultVoice');
         const clearCacheBtn = document.getElementById('clearCache');
+        const textInput = document.getElementById('textInput');
+        const sendTextBtn = document.getElementById('sendTextBtn');
 
         // Record button - hold to record
         recordBtn.addEventListener('mousedown', () => this.startRecording());
@@ -85,6 +87,18 @@ class LanguageChaosGame {
         recordBtn.addEventListener('touchend', (e) => {
             e.preventDefault();
             this.stopRecording();
+        });
+
+        // Text input events
+        textInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                this.sendTypedMessage();
+            }
+        });
+
+        sendTextBtn.addEventListener('click', () => {
+            this.sendTypedMessage();
         });
 
         useVoiceCloningCheckbox.addEventListener('change', (e) => {
@@ -511,6 +525,43 @@ Return only the transformed text, nothing else.`
         setTimeout(() => {
             status.textContent = '';
         }, 3000);
+    }
+
+    async sendTypedMessage() {
+        const textInput = document.getElementById('textInput');
+        const sendTextBtn = document.getElementById('sendTextBtn');
+        const text = textInput.value.trim();
+        
+        if (!text) return;
+        
+        try {
+            // Disable input while processing
+            textInput.disabled = true;
+            sendTextBtn.disabled = true;
+            document.getElementById('recordingStatus').textContent = 'Processing typed message...';
+            
+            // Transform text using LLM
+            const transformedText = await this.transformText(text);
+            
+            // Convert to speech (without voice cloning for typed messages)
+            const audioUrl = await this.textToSpeech(transformedText);
+            
+            // Send message to other players
+            this.sendAudioMessage(audioUrl, transformedText);
+            
+            // Clear input
+            textInput.value = '';
+            document.getElementById('recordingStatus').textContent = '';
+            
+        } catch (error) {
+            console.error('Processing typed message failed:', error);
+            this.showError('Failed to process typed message. Please try again.');
+        } finally {
+            // Re-enable input
+            textInput.disabled = false;
+            sendTextBtn.disabled = false;
+            textInput.focus();
+        }
     }
 }
 

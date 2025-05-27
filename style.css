@@ -272,6 +272,50 @@ body {
     border-top: 1px solid #ecf0f1;
 }
 
+.text-input-container {
+    display: flex;
+    gap: 10px;
+    margin: 15px auto;
+    max-width: 400px;
+}
+
+#textInput {
+    flex: 1;
+    padding: 12px 15px;
+    border: 2px solid #ecf0f1;
+    border-radius: 25px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+#textInput:focus {
+    border-color: #3498db;
+}
+
+.send-text-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 12px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.send-text-btn:hover {
+    background: #2980b9;
+    transform: scale(1.05);
+}
+
+.send-text-btn:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+    transform: none;
+}
+
 .record-btn {
     background: linear-gradient(45deg, #e74c3c, #c0392b);
     color: white;
