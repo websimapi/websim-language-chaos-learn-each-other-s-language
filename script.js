@@ -6,6 +6,8 @@ class LanguageChaosGame {
         this.isRecording = false;
         this.audioCache = new Map();
         this.currentPlayingAudio = null;
+        this.speechRecognition = null;
+        this.recognizedText = '';
         
         this.useVoiceCloning = true;
         this.defaultVoice = 'en-male';
@@ -123,6 +125,9 @@ class LanguageChaosGame {
                 this.processRecording();
             };
 
+            // Setup speech recognition
+            this.setupSpeechRecognition();
+
             console.log('Microphone setup successful');
         } catch (error) {
             console.error('Microphone setup failed:', error);
@@ -130,10 +135,39 @@ class LanguageChaosGame {
         }
     }
 
+    setupSpeechRecognition() {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            console.warn('Speech recognition not supported');
+            return;
+        }
+
+        this.speechRecognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        this.speechRecognition.continuous = true;
+        this.speechRecognition.interimResults = true;
+        this.speechRecognition.lang = 'en-US';
+
+        this.speechRecognition.onresult = (event) => {
+            let finalTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                if (event.results[i].isFinal) {
+                    finalTranscript += event.results[i][0].transcript + ' ';
+                }
+            }
+            if (finalTranscript) {
+                this.recognizedText += finalTranscript;
+            }
+        };
+
+        this.speechRecognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+        };
+    }
+
     startRecording() {
         if (!this.mediaRecorder || this.isRecording) return;
 
         this.audioChunks = [];
+        this.recognizedText = '';
         this.isRecording = true;
         
         const recordBtn = document.getElementById('recordBtn');
@@ -147,6 +181,15 @@ class LanguageChaosGame {
         document.getElementById('recordingStatus').textContent = 'Recording... Release to send';
         
         this.mediaRecorder.start();
+        
+        // Start speech recognition
+        if (this.speechRecognition) {
+            try {
+                this.speechRecognition.start();
+            } catch (error) {
+                console.warn('Speech recognition already running');
+            }
+        }
     }
 
     stopRecording() {
@@ -165,16 +208,21 @@ class LanguageChaosGame {
         document.getElementById('recordingStatus').textContent = 'Processing...';
         
         this.mediaRecorder.stop();
+        
+        // Stop speech recognition
+        if (this.speechRecognition) {
+            this.speechRecognition.stop();
+        }
     }
 
     async processRecording() {
         try {
             const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
             
-            // Convert to text using speech recognition
-            const text = await this.speechToText(audioBlob);
+            // Use the recognized text from real-time speech recognition
+            const text = this.recognizedText.trim();
             
-            if (!text.trim()) {
+            if (!text) {
                 this.showError('No speech detected. Please try again.');
                 document.getElementById('recordingStatus').textContent = '';
                 return;
@@ -196,40 +244,6 @@ class LanguageChaosGame {
             this.showError('Failed to process recording. Please try again.');
             document.getElementById('recordingStatus').textContent = '';
         }
-    }
-
-    async speechToText(audioBlob) {
-        return new Promise((resolve, reject) => {
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            
-            recognition.lang = 'en-US';
-            recognition.continuous = false;
-            recognition.interimResults = false;
-
-            // Convert blob to audio element for recognition
-            const audioUrl = URL.createObjectURL(audioBlob);
-            const audio = new Audio(audioUrl);
-            
-            recognition.onresult = (event) => {
-                const text = event.results[0][0].transcript;
-                resolve(text);
-                URL.revokeObjectURL(audioUrl);
-            };
-
-            recognition.onerror = (event) => {
-                reject(new Error('Speech recognition failed: ' + event.error));
-                URL.revokeObjectURL(audioUrl);
-            };
-
-            recognition.onend = () => {
-                URL.revokeObjectURL(audioUrl);
-            };
-
-            // Play audio and start recognition
-            audio.play().then(() => {
-                recognition.start();
-            }).catch(reject);
-        });
     }
 
     async transformText(originalText) {
@@ -470,4 +484,3 @@ Return only the transformed text, nothing else.`
 document.addEventListener('DOMContentLoaded', () => {
     new LanguageChaosGame();
 });
-
