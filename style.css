@@ -309,6 +309,31 @@ body {
     color: #7f8c8d;
 }
 
+.live-transcript {
+    margin-top: 10px;
+    padding: 15px;
+    background: rgba(52, 152, 219, 0.1);
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+    min-height: 50px;
+    font-style: italic;
+    color: #2c3e50;
+    display: none;
+}
+
+.live-transcript.active {
+    display: block;
+}
+
+.live-transcript .interim {
+    color: #7f8c8d;
+}
+
+.live-transcript .final {
+    color: #2c3e50;
+    font-weight: bold;
+}
+
 .language-info {
     background: rgba(255,255,255,0.95);
     padding: 20px;
@@ -347,4 +372,3 @@ body {
         flex-direction: column;
     }
 }
-

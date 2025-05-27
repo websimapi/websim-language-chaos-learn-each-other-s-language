@@ -7,7 +7,8 @@ class LanguageChaosGame {
         this.audioCache = new Map();
         this.currentPlayingAudio = null;
         this.speechRecognition = null;
-        this.recognizedText = '';
+        this.finalTranscript = '';
+        this.interimTranscript = '';
         
         this.useVoiceCloning = true;
         this.defaultVoice = 'en-male';
@@ -147,36 +148,59 @@ class LanguageChaosGame {
         this.speechRecognition.lang = 'en-US';
 
         this.speechRecognition.onresult = (event) => {
-            let finalTranscript = '';
+            this.finalTranscript = '';
+            this.interimTranscript = '';
+
             for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
                 if (event.results[i].isFinal) {
-                    finalTranscript += event.results[i][0].transcript + ' ';
+                    this.finalTranscript += transcript;
+                } else {
+                    this.interimTranscript += transcript;
                 }
             }
-            if (finalTranscript) {
-                this.recognizedText += finalTranscript;
-            }
+
+            this.updateLiveTranscript();
         };
 
         this.speechRecognition.onerror = (event) => {
             console.error('Speech recognition error:', event.error);
         };
+
+        this.speechRecognition.onend = () => {
+            // Recognition ended, this is normal when recording stops
+        };
+    }
+
+    updateLiveTranscript() {
+        const liveTranscriptElement = document.getElementById('liveTranscript');
+        const finalText = this.finalTranscript;
+        const interimText = this.interimTranscript;
+
+        liveTranscriptElement.innerHTML = `
+            <span class="final">${finalText}</span>
+            <span class="interim">${interimText}</span>
+        `;
     }
 
     startRecording() {
         if (!this.mediaRecorder || this.isRecording) return;
 
         this.audioChunks = [];
-        this.recognizedText = '';
         this.isRecording = true;
+        this.finalTranscript = '';
+        this.interimTranscript = '';
         
         const recordBtn = document.getElementById('recordBtn');
         const recordText = recordBtn.querySelector('.record-text');
         const recordIcon = recordBtn.querySelector('.record-icon');
+        const liveTranscriptElement = document.getElementById('liveTranscript');
         
         recordBtn.classList.add('recording');
         recordText.textContent = 'Recording...';
         recordIcon.textContent = '🔴';
+        liveTranscriptElement.classList.add('active');
+        liveTranscriptElement.innerHTML = '<span class="interim">Listening...</span>';
         
         document.getElementById('recordingStatus').textContent = 'Recording... Release to send';
         
@@ -187,7 +211,7 @@ class LanguageChaosGame {
             try {
                 this.speechRecognition.start();
             } catch (error) {
-                console.warn('Speech recognition already running');
+                console.error('Failed to start speech recognition:', error);
             }
         }
     }
@@ -200,6 +224,7 @@ class LanguageChaosGame {
         const recordBtn = document.getElementById('recordBtn');
         const recordText = recordBtn.querySelector('.record-text');
         const recordIcon = recordBtn.querySelector('.record-icon');
+        const liveTranscriptElement = document.getElementById('liveTranscript');
         
         recordBtn.classList.remove('recording');
         recordText.textContent = 'Hold to Record';
@@ -207,20 +232,29 @@ class LanguageChaosGame {
         
         document.getElementById('recordingStatus').textContent = 'Processing...';
         
-        this.mediaRecorder.stop();
-        
         // Stop speech recognition
         if (this.speechRecognition) {
-            this.speechRecognition.stop();
+            try {
+                this.speechRecognition.stop();
+            } catch (error) {
+                console.error('Failed to stop speech recognition:', error);
+            }
         }
+        
+        this.mediaRecorder.stop();
+        
+        // Hide live transcript after a delay
+        setTimeout(() => {
+            liveTranscriptElement.classList.remove('active');
+        }, 1000);
     }
 
     async processRecording() {
         try {
             const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
             
-            // Use the recognized text from real-time speech recognition
-            const text = this.recognizedText.trim();
+            // Use the final transcript from real-time recognition
+            const text = this.finalTranscript.trim();
             
             if (!text) {
                 this.showError('No speech detected. Please try again.');
